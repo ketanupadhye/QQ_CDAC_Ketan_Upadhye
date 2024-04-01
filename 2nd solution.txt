@@ -1,0 +1,49 @@
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+public class PDFToWordConverter {
+    public static void main(String[] args) {
+        // File path for the PDF
+        String pdfFilePath = "path_to_your_pdf_file.pdf";
+
+        // Output file path for the Word document
+        String wordFilePath = "output_word_file.docx";
+
+        try {
+            // Load the PDF document
+            PDDocument document = PDDocument.load(new File(C:\Users\Dell\OneDrive\Desktop\New folder (3)));
+
+            // Create a PDFTextStripper object to extract text
+            PDFTextStripper stripper = new PDFTextStripper();
+
+            // Extract text from PDF
+            String pdfText = stripper.getText(document);
+
+            // Close the PDF document
+            document.close();
+
+            // Perform OCR on the extracted text using Tesseract
+            Tesseract tesseract = new Tesseract();
+            tesseract.setLanguage("eng"); // Set language to English
+            String ocrText = tesseract.doOCR(new File(C:\Users\Dell\OneDrive\Desktop\New folder (3)));
+
+            // Write the OCR text to a Word document
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(wordFilePath), "UTF-8")) {
+                writer.write(ocrText);
+            }
+
+            System.out.println("Text extracted from PDF and saved to Word document successfully.");
+
+        } catch (IOException | TesseractException e) {
+            e.printStackTrace();
+        }
+    }
+}
