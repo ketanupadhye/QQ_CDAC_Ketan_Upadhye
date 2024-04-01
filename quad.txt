@@ -1,0 +1,58 @@
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.TranslateOptions;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PDFTextTranslator {
+    public static void main(String[] args) throws IOException {
+        // PDF file path
+        String pdfFilePath = " https://drive.google.com/file/d/1HtPXlM1vLD1HeRfQSW1THPodouFiBj39/view?u
+ sp=sharing";
+
+        // Extract text from the PDF file
+        String pdfContent = extractTextFromPDF(pdfFilePath);
+
+        // Extract text from rows (4), (7), and (8)
+        String row4 = pdfContent.split("\\(4\\) भू-मापन,पोटिहसा व\\nघरमांक\\(असयास\\)")[1].split("\\(5\\) ेफळ")[0].trim();
+        String row7 = pdfContent.split("\\(7\\) दतऐवज कन देणा-या/लहून ठेवणा-या\\nपकाराचे नाव कवा िदवाणी यायालयाचा\\nहुकुमनामा कवा आदेश असयास,तवािदचे\\nनाव व पा\\.")[1].split("\\(8\\)दतऐवज कन घेणा-या पकाराचे व")[0].trim();
+        String row8 = pdfContent.split("\\(8\\)दतऐवज कन घेणा-या पकाराचे व\\nकवा िदवाणी यायालयाचा हुकुमनामा कवा\\nआदेश असयास,तवािदचे नाव व पा")[1].split("\\(9\\) दतऐवज कन िदयाचा िदनांक")[0].trim();
+
+        // Translate text from Marathi to English
+        Translate translate = TranslateOptions.getDefaultInstance().getService();
+        String row4En = translate.translate(row4, Translate.TranslateOption.sourceLanguage("mr"), Translate.TranslateOption.targetLanguage("en")).getTranslatedText();
+        String row7En = translate.translate(row7, Translate.TranslateOption.sourceLanguage("mr"), Translate.TranslateOption.targetLanguage("en")).getTranslatedText();
+        String row8En = translate.translate(row8, Translate.TranslateOption.sourceLanguage("mr"), Translate.TranslateOption.targetLanguage("en")).getTranslatedText();
+
+        // Create a list of lists with translated text
+        List<List<String>> translatedRows = new ArrayList<>();
+        translatedRows.add(new ArrayList<>(List.of(row4En)));
+        translatedRows.add(new ArrayList<>(List.of(row7En)));
+        translatedRows.add(new ArrayList<>(List.of(row8En)));
+
+        // Save the list of lists as a CSV file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("translated_text.csv"))) {
+            for (List<String> row : translatedRows) {
+                writer.write(String.join(",", row));
+                writer.newLine();
+            }
+        }
+
+        System.out.println("Translated text saved to 'translated_text.csv'");
+    }
+
+    private static String extractTextFromPDF(String pdfFilePath) throws IOException {
+        File file = new File(pdfFilePath);
+        PDDocument document = PDDocument.load(file);
+        PDFTextStripper stripper = new PDFTextStripper();
+        String pdfContent = stripper.getText(document);
+        document.close();
+        return pdfContent;
+    }
+}
